@@ -1,0 +1,12 @@
+sf2dump
+objects
+
+Makefile.local
+
+*.sf2
+*.hex
+temp*
+tmp*
+*.temp
+*.tmp
+
