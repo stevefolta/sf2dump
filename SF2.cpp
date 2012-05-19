@@ -41,4 +41,28 @@ void SF2::inst::ReadFrom(FILE* file)
 }
 
 
+void SF2::ibag::ReadFrom(FILE* file)
+{
+	#include "sf2-chunks/ibag.h"
+}
+
+
+void SF2::imod::ReadFrom(FILE* file)
+{
+	#include "sf2-chunks/imod.h"
+}
+
+
+void SF2::igen::ReadFrom(FILE* file)
+{
+	#include "sf2-chunks/igen.h"
+}
+
+
+void SF2::shdr::ReadFrom(FILE* file)
+{
+	#include "sf2-chunks/shdr.h"
+}
+
+
 

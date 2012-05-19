@@ -182,6 +182,43 @@ void DumpPdta(FILE* file, RIFFChunk* pdtaChunk)
 			printf("[%d] \"%s\": %d\n", i, inst.instName, inst.instBagNdx);
 			EndArray();
 			}
+		else if (FourCCEquals(chunk.id, "ibag")) {
+			StartArray(ibag, 4);
+			printf("instGen: %d  instMod: %d\n", ibag.instGenNdx, ibag.instModNdx);
+			EndArray();
+			}
+		else if (FourCCEquals(chunk.id, "imod")) {
+			StartArray(imod, 10);
+			printf(
+				"[%d] srcOp: %d  destOp: %d  amount: %d  amtSrcOp: %d  transOp: %d\n",
+				imod.modSrcOper, imod.modDestOper, imod.modAmount,
+				imod.modAmtSrcOper, imod.modTransOper);
+			EndArray();
+			}
+		else if (FourCCEquals(chunk.id, "igen")) {
+			StartArray(igen, 4);
+			printf(
+				"[%d] genOper: %d  genAmount: %d/%d/%d-%d\n",
+				i, igen.genOper,
+				igen.genAmount.wordAmount, igen.genAmount.shortAmount,
+				igen.genAmount.ranges.lo, igen.genAmount.ranges.hi);
+			EndArray();
+			}
+		else if (FourCCEquals(chunk.id, "shdr")) {
+			StartArray(shdr, 46);
+			printf(
+				"[%d] \"%s\": %lu-%lu  loop: %lu-%lu \n",
+				i, shdr.sampleName,
+				shdr.start, shdr.end, shdr.startLoop, shdr.endLoop);
+			indent += 1;
+			EmitIndent();
+			printf(
+				"sampleRate: %lu  origPitch: %d  pitchCorrection: %d  sampleLink: %d  sampleType: %d\n",
+				shdr.sampleRate, shdr.originalPitch, shdr.pitchCorrection,
+				shdr.sampleLink, shdr.sampleType);
+			indent -= 1;
+			EndArray();
+			}
 		else
 			DumpChunk(&chunk);
 

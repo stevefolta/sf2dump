@@ -49,6 +49,26 @@ namespace SF2 {
 		void	ReadFrom(FILE* file);
 		};
 
+	struct ibag {
+		#include "sf2-chunks/ibag.h"
+		void	ReadFrom(FILE* file);
+		};
+
+	struct imod {
+		#include "sf2-chunks/imod.h"
+		void	ReadFrom(FILE* file);
+		};
+
+	struct igen {
+		#include "sf2-chunks/igen.h"
+		void	ReadFrom(FILE* file);
+		};
+
+	struct shdr {
+		#include "sf2-chunks/shdr.h"
+		void	ReadFrom(FILE* file);
+		};
+
 	};
 
 #undef SF2Field
