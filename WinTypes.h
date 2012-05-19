@@ -5,6 +5,9 @@ typedef char fourcc[4];
 typedef long dword;
 typedef short word;
 
+// Special types for SF2 fields.
+typedef char char20[20];
+
 
 #define FourCCEquals(value1, value2) 	\
 	(value1[0] == value2[0] && value1[1] == value2[1] && 	\

@@ -16,6 +16,7 @@ struct Error {
 
 extern void DumpSF2(const char* filename);
 extern void DumpINFO(FILE* file, RIFFChunk* infoChunk);
+extern void DumpPdta(FILE* file, RIFFChunk* pdtaChunk);
 extern void DumpChunk(RIFFChunk* chunk);
 
 static int indent = 0;
@@ -65,6 +66,8 @@ void DumpSF2(const char* filename)
 
 		if (FourCCEquals(chunk.id, "INFO"))
 			DumpINFO(file, &chunk);
+		else if (FourCCEquals(chunk.id, "pdta"))
+			DumpPdta(file, &chunk);
 
 		indent -= 1;
 		chunk.SeekAfter(file);
@@ -82,7 +85,7 @@ void DumpINFO(FILE* file, RIFFChunk* infoChunk)
 
 		if (FourCCEquals(chunk.id, "ifil") || FourCCEquals(chunk.id, "iver")) {
 			SF2::iver iver;
-			fread(&iver, sizeof(iver), 1, file);
+			iver.ReadFrom(file);
 			EmitIndent();
 			printf("'%c%c%c%c': %d.%d\n", FourCCArgs(chunk.id), iver.major, iver.minor);
 			}
@@ -107,6 +110,35 @@ void DumpINFO(FILE* file, RIFFChunk* infoChunk)
 			else
 				DumpChunk(&chunk);
 			}
+
+		chunk.SeekAfter(file);
+		}
+}
+
+
+void DumpPdta(FILE* file, RIFFChunk* pdtaChunk)
+{
+	while (ftell(file) < pdtaChunk->End()) {
+		RIFFChunk chunk;
+		chunk.ReadFrom(file);
+
+		if (FourCCEquals(chunk.id, "phdr")) {
+			SF2::phdr phdr;
+			phdr.ReadFrom(file);
+			EmitIndent();
+			printf("'%c%c%c%c':\n", FourCCArgs(chunk.id));
+			indent += 1;
+			EmitIndent();  printf("presetName: \"%s\"\n", phdr.presetName);
+			EmitIndent();  printf("preset: %d\n", phdr.preset);
+			EmitIndent();  printf("bank: %d\n", phdr.bank);
+			EmitIndent();  printf("presetBagNdx: %d\n", phdr.presetBagNdx);
+			EmitIndent();  printf("library: %d\n", phdr.library);
+			EmitIndent();  printf("genre: %d\n", phdr.genre);
+			EmitIndent();  printf("morphology: %d\n", phdr.morphology);
+			indent -= 1;
+			}
+		else
+			DumpChunk(&chunk);
 
 		chunk.SeekAfter(file);
 		}
