@@ -140,12 +140,9 @@ void DumpPdta(FILE* file, RIFFChunk* pdtaChunk)
 		chunk.ReadFrom(file);
 
 		if (FourCCEquals(chunk.id, "phdr")) {
-			SF2::phdr phdr;
-			phdr.ReadFrom(file);
-			EmitIndent();
-			printf("'%c%c%c%c':\n", FourCCArgs(chunk.id));
+			StartArray(phdr, 38);
+			printf("\"%.20s\":\n", phdr.presetName);
 			indent += 1;
-			EmitIndent();  printf("presetName: \"%s\"\n", phdr.presetName);
 			EmitIndent();  printf("preset: %d\n", phdr.preset);
 			EmitIndent();  printf("bank: %d\n", phdr.bank);
 			EmitIndent();  printf("presetBagNdx: %d\n", phdr.presetBagNdx);
@@ -153,10 +150,11 @@ void DumpPdta(FILE* file, RIFFChunk* pdtaChunk)
 			EmitIndent();  printf("genre: %d\n", phdr.genre);
 			EmitIndent();  printf("morphology: %d\n", phdr.morphology);
 			indent -= 1;
+			EndArray();
 			}
 		else if (FourCCEquals(chunk.id, "pbag")) {
 			StartArray(pbag, 4);
-			printf("genNdx: %d  modNdx: %d\n", pbag.genNdx, pbag.modNdx);
+			printf("[%d] genNdx: %d  modNdx: %d\n", i, pbag.genNdx, pbag.modNdx);
 			EndArray();
 			}
 		else if (FourCCEquals(chunk.id, "pmod")) {
