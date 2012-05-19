@@ -1,5 +1,5 @@
 BIN := sf2dump
-SOURCES := Main.cpp RIFF.cpp SF2.cpp
+SOURCES := Main.cpp RIFF.cpp SF2.cpp SF2Generator.cpp
 OBJECT_DIR := objects
 
 -include Makefile.local

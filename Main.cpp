@@ -1,5 +1,6 @@
 #include "RIFF.h"
 #include "SF2.h"
+#include "SF2Generator.h"
 #include <stdio.h>
 #include <string>
 
@@ -17,6 +18,7 @@ struct Error {
 extern void DumpSF2(const char* filename);
 extern void DumpINFO(FILE* file, RIFFChunk* infoChunk);
 extern void DumpPdta(FILE* file, RIFFChunk* pdtaChunk);
+extern void DumpGenerator(int index, word genOper, SF2::genAmountType genAmount);
 extern void DumpChunk(RIFFChunk* chunk);
 
 static int indent = 0;
@@ -168,11 +170,7 @@ void DumpPdta(FILE* file, RIFFChunk* pdtaChunk)
 			}
 		else if (FourCCEquals(chunk.id, "pgen")) {
 			StartArray(pgen, 4);
-			printf(
-				"[%d] genOper: %d  genAmount: %d/%d/%d-%d\n",
-				i, pgen.genOper,
-				pgen.genAmount.wordAmount, pgen.genAmount.shortAmount,
-				pgen.genAmount.ranges.lo, pgen.genAmount.ranges.hi);
+			DumpGenerator(i, pgen.genOper, pgen.genAmount);
 			EndArray();
 			}
 		else if (FourCCEquals(chunk.id, "inst")) {
@@ -182,7 +180,7 @@ void DumpPdta(FILE* file, RIFFChunk* pdtaChunk)
 			}
 		else if (FourCCEquals(chunk.id, "ibag")) {
 			StartArray(ibag, 4);
-			printf("instGen: %d  instMod: %d\n", ibag.instGenNdx, ibag.instModNdx);
+			printf("[%d] instGen: %d  instMod: %d\n", i, ibag.instGenNdx, ibag.instModNdx);
 			EndArray();
 			}
 		else if (FourCCEquals(chunk.id, "imod")) {
@@ -195,11 +193,7 @@ void DumpPdta(FILE* file, RIFFChunk* pdtaChunk)
 			}
 		else if (FourCCEquals(chunk.id, "igen")) {
 			StartArray(igen, 4);
-			printf(
-				"[%d] genOper: %d  genAmount: %d/%d/%d-%d\n",
-				i, igen.genOper,
-				igen.genAmount.wordAmount, igen.genAmount.shortAmount,
-				igen.genAmount.ranges.lo, igen.genAmount.ranges.hi);
+			DumpGenerator(i, igen.genOper, igen.genAmount);
 			EndArray();
 			}
 		else if (FourCCEquals(chunk.id, "shdr")) {
@@ -221,6 +215,39 @@ void DumpPdta(FILE* file, RIFFChunk* pdtaChunk)
 			DumpChunk(&chunk);
 
 		chunk.SeekAfter(file);
+		}
+}
+
+
+void DumpGenerator(int index, word genOper, SF2::genAmountType genAmount)
+{
+	const SF2Generator* generator = GeneratorFor(genOper);
+	if (generator == NULL) {
+		printf(
+			"[%d] genOper: %d  genAmount: %d/%d/%d-%d\n",
+			index, genOper,
+			genAmount.wordAmount, genAmount.shortAmount,
+			genAmount.ranges.lo, genAmount.ranges.hi);
+		}
+	else {
+		switch (generator->type) {
+			case SF2Generator::Short:
+				printf(
+					"[%d] %s (%d): %d\n",
+					index, generator->name, genOper, genAmount.shortAmount);
+				break;
+			case SF2Generator::Word:
+				printf(
+					"[%d] %s (%d): %d\n",
+					index, generator->name, genOper, genAmount.wordAmount);
+				break;
+			case SF2Generator::Range:
+				printf(
+					"[%d] %s (%d): %d-%d\n",
+					index, generator->name, genOper,
+					genAmount.ranges.hi, genAmount.ranges.lo);
+				break;
+			}
 		}
 }
 
