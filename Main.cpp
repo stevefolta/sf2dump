@@ -118,6 +118,23 @@ void DumpINFO(FILE* file, RIFFChunk* infoChunk)
 
 void DumpPdta(FILE* file, RIFFChunk* pdtaChunk)
 {
+	int i, numItems;
+
+	#define StartArray(typeName, fileSize) 	\
+			EmitIndent(); 	\
+			printf("'%c%c%c%c':\n", FourCCArgs(chunk.id)); 	\
+			indent += 1; 	\
+			\
+			numItems = chunk.size / fileSize; 	\
+			for (i = 0; i < numItems; ++i) { 	\
+				SF2::typeName typeName; 	\
+				typeName.ReadFrom(file); 	\
+				EmitIndent();
+	#define EndArray() 	\
+				} 	\
+			\
+			indent -= 1;
+
 	while (ftell(file) < pdtaChunk->End()) {
 		RIFFChunk chunk;
 		chunk.ReadFrom(file);
@@ -136,6 +153,34 @@ void DumpPdta(FILE* file, RIFFChunk* pdtaChunk)
 			EmitIndent();  printf("genre: %d\n", phdr.genre);
 			EmitIndent();  printf("morphology: %d\n", phdr.morphology);
 			indent -= 1;
+			}
+		else if (FourCCEquals(chunk.id, "pbag")) {
+			StartArray(pbag, 4);
+			printf("genNdx: %d  modNdx: %d\n", pbag.genNdx, pbag.modNdx);
+			EndArray();
+			}
+		else if (FourCCEquals(chunk.id, "pmod")) {
+			StartArray(pmod, 10);
+			printf(
+				"modSrc: %d  modDest: %d  modAmount: %d  "
+				"modAmtSrc: %d  modAmtDest: %d\n",
+				pmod.modSrcOper, pmod.modDestOper, pmod.modAmount,
+				pmod.modAmtSrcOper, pmod.modTransOper);
+			EndArray();
+			}
+		else if (FourCCEquals(chunk.id, "pgen")) {
+			StartArray(pgen, 4);
+			printf(
+				"[%d] genOper: %d  genAmount: %d/%d/%d-%d\n",
+				i, pgen.genOper,
+				pgen.genAmount.wordAmount, pgen.genAmount.shortAmount,
+				pgen.genAmount.ranges.lo, pgen.genAmount.ranges.hi);
+			EndArray();
+			}
+		else if (FourCCEquals(chunk.id, "inst")) {
+			StartArray(inst, 22);
+			printf("[%d] \"%s\": %d\n", i, inst.instName, inst.instBagNdx);
+			EndArray();
 			}
 		else
 			DumpChunk(&chunk);

@@ -9,6 +9,16 @@
 
 namespace SF2 {
 
+	struct rangesType {
+		byte	lo, hi;
+		};
+
+	union genAmountType {
+		rangesType	ranges;
+		short     	shortAmount;
+		word      	wordAmount;
+		};
+
 	struct iver {
 		#include "sf2-chunks/iver.h"
 		void	ReadFrom(FILE* file);
@@ -18,6 +28,27 @@ namespace SF2 {
 		#include "sf2-chunks/phdr.h"
 		void	ReadFrom(FILE* file);
 		};
+
+	struct pbag {
+		#include "sf2-chunks/pbag.h"
+		void	ReadFrom(FILE* file);
+		};
+
+	struct pmod {
+		#include "sf2-chunks/pmod.h"
+		void	ReadFrom(FILE* file);
+		};
+
+	struct pgen {
+		#include "sf2-chunks/pgen.h"
+		void	ReadFrom(FILE* file);
+		};
+
+	struct inst {
+		#include "sf2-chunks/inst.h"
+		void	ReadFrom(FILE* file);
+		};
+
 	};
 
 #undef SF2Field
