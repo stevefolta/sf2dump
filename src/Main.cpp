@@ -1,18 +1,11 @@
 #include "RIFF.h"
 #include "SF2.h"
 #include "SF2Generator.h"
+#include "Indent.h"
+#include "Error.h"
 #include <stdio.h>
-#include <string>
 
 using namespace std;
-
-
-struct Error {
-	string	message;
-
-	Error(string messageIn)
-		: message(messageIn) {}
-	};
 
 
 extern void DumpSF2(const char* filename);
@@ -20,13 +13,6 @@ extern void DumpINFO(FILE* file, RIFFChunk* infoChunk);
 extern void DumpPdta(FILE* file, RIFFChunk* pdtaChunk);
 extern void DumpGenerator(int index, word genOper, SF2::genAmountType genAmount);
 extern void DumpChunk(RIFFChunk* chunk);
-
-static int indent = 0;
-void EmitIndent()
-{
-	for (int i = 0; i < indent; ++i)
-		printf("  ");
-}
 
 
 int main(int argc, char* argv[])
