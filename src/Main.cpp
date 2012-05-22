@@ -1,25 +1,38 @@
 #include "RIFF.h"
 #include "SF2.h"
 #include "SF2Generator.h"
+#include "Dump.h"
+#include "StructuralDump.h"
 #include "Indent.h"
 #include "Error.h"
 #include <stdio.h>
+#include <string.h>
 
 using namespace std;
 
 
 extern void DumpSF2(const char* filename);
-extern void DumpINFO(FILE* file, RIFFChunk* infoChunk);
 extern void DumpPdta(FILE* file, RIFFChunk* pdtaChunk);
-extern void DumpGenerator(int index, word genOper, SF2::genAmountType genAmount);
-extern void DumpChunk(RIFFChunk* chunk);
 
 
 int main(int argc, char* argv[])
 {
 	try {
-		for (int whichArg = 1; whichArg < argc; ++whichArg)
-			DumpSF2(argv[whichArg]);
+		bool structural = false;
+		for (int whichArg = 1; whichArg < argc; ++whichArg) {
+			const char* arg = argv[whichArg];
+			if (strcmp(arg, "-s") == 0 ||
+			    strcmp(arg, "--structural") == 0 ||
+			    strcmp(arg, "-h") == 0) {
+				structural = true;
+				}
+			else {
+				if (structural)
+					DumpSF2Structurally(arg);
+				else
+					DumpSF2(arg);
+				}
+			}
 		}
 	catch (Error error) {
 		fprintf(stderr, "%s\n", error.message.c_str());
@@ -65,55 +78,16 @@ void DumpSF2(const char* filename)
 }
 
 
-void DumpINFO(FILE* file, RIFFChunk* infoChunk)
-{
-	while (ftell(file) < infoChunk->End()) {
-		RIFFChunk chunk;
-		chunk.ReadFrom(file);
-
-		if (FourCCEquals(chunk.id, "ifil") || FourCCEquals(chunk.id, "iver")) {
-			SF2::iver iver;
-			iver.ReadFrom(file);
-			EmitIndent();
-			printf("'%c%c%c%c': %d.%d\n", FourCCArgs(chunk.id), iver.major, iver.minor);
-			}
-		else {
-			static const char* stringChunks[] = {
-				"isng", "INAM", "ICRD", "IENG", "IPRD", "ICOP", "ICMT", "ISFT",
-				""
-				};
-			bool isStringChunk = false;
-			for (int i = 0; ; ++i) {
-				if (stringChunks[i][0] == 0)
-					break;
-				if (FourCCEquals(chunk.id, stringChunks[i])) {
-					isStringChunk = true;
-					break;
-					}
-				}
-			if (isStringChunk) {
-				EmitIndent();
-				printf("'%c%c%c%c': \"%s\"\n", FourCCArgs(chunk.id), chunk.ReadString(file).c_str());
-				}
-			else
-				DumpChunk(&chunk);
-			}
-
-		chunk.SeekAfter(file);
-		}
-}
-
-
 void DumpPdta(FILE* file, RIFFChunk* pdtaChunk)
 {
 	int i, numItems;
 
-	#define StartArray(typeName, fileSize) 	\
+	#define StartArray(typeName) 	\
 			EmitIndent(); 	\
 			printf("'%c%c%c%c':\n", FourCCArgs(chunk.id)); 	\
 			indent += 1; 	\
 			\
-			numItems = chunk.size / fileSize; 	\
+			numItems = chunk.size / SF2::typeName::sizeInFile; 	\
 			for (i = 0; i < numItems; ++i) { 	\
 				SF2::typeName typeName; 	\
 				typeName.ReadFrom(file); 	\
@@ -128,7 +102,7 @@ void DumpPdta(FILE* file, RIFFChunk* pdtaChunk)
 		chunk.ReadFrom(file);
 
 		if (FourCCEquals(chunk.id, "phdr")) {
-			StartArray(phdr, 38);
+			StartArray(phdr);
 			printf("\"%.20s\":\n", phdr.presetName);
 			indent += 1;
 			EmitIndent();  printf("preset: %d\n", phdr.preset);
@@ -141,12 +115,12 @@ void DumpPdta(FILE* file, RIFFChunk* pdtaChunk)
 			EndArray();
 			}
 		else if (FourCCEquals(chunk.id, "pbag")) {
-			StartArray(pbag, 4);
+			StartArray(pbag);
 			printf("[%d] genNdx: %d  modNdx: %d\n", i, pbag.genNdx, pbag.modNdx);
 			EndArray();
 			}
 		else if (FourCCEquals(chunk.id, "pmod")) {
-			StartArray(pmod, 10);
+			StartArray(pmod);
 			printf(
 				"modSrc: %d  modDest: %d  modAmount: %d  "
 				"modAmtSrc: %d  modAmtDest: %d\n",
@@ -155,22 +129,22 @@ void DumpPdta(FILE* file, RIFFChunk* pdtaChunk)
 			EndArray();
 			}
 		else if (FourCCEquals(chunk.id, "pgen")) {
-			StartArray(pgen, 4);
+			StartArray(pgen);
 			DumpGenerator(i, pgen.genOper, pgen.genAmount);
 			EndArray();
 			}
 		else if (FourCCEquals(chunk.id, "inst")) {
-			StartArray(inst, 22);
+			StartArray(inst);
 			printf("[%d] \"%s\": %d\n", i, inst.instName, inst.instBagNdx);
 			EndArray();
 			}
 		else if (FourCCEquals(chunk.id, "ibag")) {
-			StartArray(ibag, 4);
+			StartArray(ibag);
 			printf("[%d] instGen: %d  instMod: %d\n", i, ibag.instGenNdx, ibag.instModNdx);
 			EndArray();
 			}
 		else if (FourCCEquals(chunk.id, "imod")) {
-			StartArray(imod, 10);
+			StartArray(imod);
 			printf(
 				"[%d] srcOp: %d  destOp: %d  amount: %d  amtSrcOp: %d  transOp: %d\n",
 				imod.modSrcOper, imod.modDestOper, imod.modAmount,
@@ -178,12 +152,12 @@ void DumpPdta(FILE* file, RIFFChunk* pdtaChunk)
 			EndArray();
 			}
 		else if (FourCCEquals(chunk.id, "igen")) {
-			StartArray(igen, 4);
+			StartArray(igen);
 			DumpGenerator(i, igen.genOper, igen.genAmount);
 			EndArray();
 			}
 		else if (FourCCEquals(chunk.id, "shdr")) {
-			StartArray(shdr, 46);
+			StartArray(shdr);
 			printf(
 				"[%d] \"%s\": %lu-%lu  loop: %lu-%lu \n",
 				i, shdr.sampleName,
@@ -202,46 +176,6 @@ void DumpPdta(FILE* file, RIFFChunk* pdtaChunk)
 
 		chunk.SeekAfter(file);
 		}
-}
-
-
-void DumpGenerator(int index, word genOper, SF2::genAmountType genAmount)
-{
-	const SF2Generator* generator = GeneratorFor(genOper);
-	if (generator == NULL) {
-		printf(
-			"[%d] genOper: %d  genAmount: %d/%d/%d-%d\n",
-			index, genOper,
-			genAmount.wordAmount, genAmount.shortAmount,
-			genAmount.ranges.lo, genAmount.ranges.hi);
-		}
-	else {
-		switch (generator->type) {
-			case SF2Generator::Short:
-				printf(
-					"[%d] %s (%d): %d\n",
-					index, generator->name, genOper, genAmount.shortAmount);
-				break;
-			case SF2Generator::Word:
-				printf(
-					"[%d] %s (%d): %d\n",
-					index, generator->name, genOper, genAmount.wordAmount);
-				break;
-			case SF2Generator::Range:
-				printf(
-					"[%d] %s (%d): %d-%d\n",
-					index, generator->name, genOper,
-					genAmount.ranges.hi, genAmount.ranges.lo);
-				break;
-			}
-		}
-}
-
-
-void DumpChunk(RIFFChunk* chunk)
-{
-	EmitIndent();
-	printf("'%c%c%c%c' size %ld.\n", FourCCArgs(chunk->id), chunk->size);
 }
 
 
