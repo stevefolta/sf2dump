@@ -21,7 +21,7 @@ $(OBJECT_DIR):
 $(BIN): $(OBJECT_DIR) $(OBJECTS)
 	$(CXX) $(LINK_FLAGS) -o $@ $(OBJECTS)
 
-$(OBJECT_DIR)/%.o: %.cpp
+$(OBJECT_DIR)/%.o: src/%.cpp
 	$(CXX) $(CFLAGS) -o $@ -c $^
 
 
