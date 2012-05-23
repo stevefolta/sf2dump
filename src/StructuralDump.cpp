@@ -2,6 +2,7 @@
 #include "RIFF.h"
 #include "SF2.h"
 #include "SF2Generator.h"
+#include "SF2SampleType.h"
 #include "Dump.h"
 #include "Indent.h"
 #include "Error.h"
@@ -101,7 +102,7 @@ void DumpPdtaStructurally(FILE* file, RIFFChunk* pdtaChunk)
 		chunk.SeekAfter(file);
 		}
 
-	// Dump.
+	// Dump presets.
 	EmitIndent();  printf("Presets:\n");
 	indent += 1;
 	for (int whichPreset = 0; whichPreset < hydra.phdrNumItems; ++whichPreset) {
@@ -121,11 +122,116 @@ void DumpPdtaStructurally(FILE* file, RIFFChunk* pdtaChunk)
 			for (int whichZone = phdr->presetBagNdx; whichZone < zoneEnd; ++whichZone) {
 				SF2::pbag* pbag = &hydra.pbag[whichZone];
 				EmitIndent();	printf("[%d]:\n", whichZone);
+				Indenter indenter;
+				int genEnd = pbag[1].genNdx;
+				int whichGen = pbag->genNdx;
+				if (whichGen < genEnd) {
+					EmitIndent();  printf("Generators:\n");
+					Indenter indenter;
+					for (; whichGen < genEnd; ++whichGen) {
+						SF2::pgen* pgen = &hydra.pgen[whichGen];
+						EmitIndent();  DumpGenerator(whichGen, pgen->genOper, pgen->genAmount);
+						}
+					}
+				int modEnd = pbag[1].modNdx;
+				int whichMod = pbag->modNdx;
+				if (whichMod < modEnd) {
+					EmitIndent();  printf("Modulators:\n");
+					Indenter indenter;
+					for (; whichMod < modEnd; ++whichMod) {
+						SF2::pmod* pmod = &hydra.pmod[whichMod];
+						EmitIndent();
+						printf(
+							"[%d] "
+							"modSrc: %d  modDest: %d  modAmount: %d  "
+							"modAmtSrc: %d  modAmtDest: %d\n",
+							whichMod,
+							pmod->modSrcOper, pmod->modDestOper, pmod->modAmount,
+							pmod->modAmtSrcOper, pmod->modTransOper);
+						}
+					}
 				}
 			}
 		indent -= 1;
 		}
 	indent -= 1;
+	printf("\n");
+
+	// Dump instruments.
+	EmitIndent();  printf("Instruments:\n");
+	indent += 1;
+	for (int whichInst = 0; whichInst < hydra.instNumItems; ++whichInst) {
+		SF2::inst* inst = &hydra.inst[whichInst];
+		bool isLastInst = (whichInst >= hydra.instNumItems - 1);
+		EmitIndent();
+		printf(
+			"[%d] \"%.20s\"%s\n",
+			whichInst, inst->instName, (isLastInst ? "" : ":"));
+		Indenter indenter;
+		if (!isLastInst) {
+			EmitIndent();  printf("Zones:\n");
+			Indenter indenter;
+			int zoneEnd = inst[1].instBagNdx;
+			for (int whichZone = inst->instBagNdx; whichZone < zoneEnd; ++whichZone) {
+				SF2::ibag* ibag = &hydra.ibag[whichZone];
+				EmitIndent();	printf("[%d]:\n", whichZone);
+				Indenter indenter;
+				int genEnd = ibag[1].instGenNdx;
+				int whichGen = ibag->instGenNdx;
+				if (whichGen < genEnd) {
+					EmitIndent();  printf("Generators:\n");
+					Indenter indenter;
+					for (; whichGen < genEnd; ++whichGen) {
+						SF2::igen* igen = &hydra.igen[whichGen];
+						EmitIndent();  DumpGenerator(whichGen, igen->genOper, igen->genAmount);
+						if (igen->genOper == 53 /* sampleID */) {
+							Indenter indenter;
+							int whichSample = igen->genAmount.wordAmount;
+							SF2::shdr* shdr = &hydra.shdr[whichSample];
+							EmitIndent();
+							printf(
+								"[%d] \"%s\": %lu-%lu  loop: %lu-%lu \n",
+								whichSample, shdr->sampleName,
+								shdr->start, shdr->end, shdr->startLoop, shdr->endLoop);
+							indent += 1;
+							EmitIndent();
+							const char* sampleType = SampleTypeName(shdr->sampleType);
+							char str[64];
+							if (sampleType[0] == 0) {
+								sprintf(str, "-Illegal (%d)-", shdr->sampleType);
+								sampleType = str;
+								}
+							printf(
+								"sampleRate: %lu  origPitch: %d  pitchCorrection: %d  "
+								"sampleLink: %d  sampleType: %s\n",
+								shdr->sampleRate, shdr->originalPitch, shdr->pitchCorrection,
+								shdr->sampleLink, sampleType);
+							indent -= 1;
+							}
+						}
+					}
+				int modEnd = ibag[1].instModNdx;
+				int whichMod = ibag->instModNdx;
+				if (whichMod < modEnd) {
+					EmitIndent();  printf("Modulators:\n");
+					Indenter indenter;
+					for (; whichMod < modEnd; ++whichMod) {
+						SF2::imod* imod = &hydra.imod[whichMod];
+						EmitIndent();
+						printf(
+							"[%d] "
+							"modSrc: %d  modDest: %d  modAmount: %d  "
+							"modAmtSrc: %d  modAmtDest: %d\n",
+							whichMod,
+							imod->modSrcOper, imod->modDestOper, imod->modAmount,
+							imod->modAmtSrcOper, imod->modTransOper);
+						}
+					}
+				}
+			}
+		}
+	indent -= 1;
+	printf("\n");
 }
 
 

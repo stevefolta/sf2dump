@@ -1,6 +1,7 @@
 #include "RIFF.h"
 #include "SF2.h"
 #include "SF2Generator.h"
+#include "SF2SampleType.h"
 #include "Dump.h"
 #include "StructuralDump.h"
 #include "Indent.h"
@@ -164,10 +165,16 @@ void DumpPdta(FILE* file, RIFFChunk* pdtaChunk)
 				shdr.start, shdr.end, shdr.startLoop, shdr.endLoop);
 			indent += 1;
 			EmitIndent();
+			const char* sampleType = SampleTypeName(shdr.sampleType);
+			char str[64];
+			if (sampleType[0] == 0) {
+				sprintf(str, "-Illegal (%d)-", shdr.sampleType);
+				sampleType = str;
+				}
 			printf(
-				"sampleRate: %lu  origPitch: %d  pitchCorrection: %d  sampleLink: %d  sampleType: %d\n",
+				"sampleRate: %lu  origPitch: %d  pitchCorrection: %d  sampleLink: %d  sampleType: %s\n",
 				shdr.sampleRate, shdr.originalPitch, shdr.pitchCorrection,
-				shdr.sampleLink, shdr.sampleType);
+				shdr.sampleLink, sampleType);
 			indent -= 1;
 			EndArray();
 			}

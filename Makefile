@@ -1,6 +1,6 @@
 BIN := sf2dump
 SOURCES := Main.cpp Dump.cpp StructuralDump.cpp
-SOURCES += RIFF.cpp SF2.cpp SF2Generator.cpp 
+SOURCES += RIFF.cpp SF2.cpp SF2Generator.cpp SF2SampleType.cpp
 SOURCES += Indent.cpp
 OBJECT_DIR := objects
 
