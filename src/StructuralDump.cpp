@@ -184,7 +184,7 @@ void DumpPdtaStructurally(FILE* file, RIFFChunk* pdtaChunk)
 					for (; whichGen < genEnd; ++whichGen) {
 						SF2::igen* igen = &hydra.igen[whichGen];
 						EmitIndent();  DumpGenerator(whichGen, igen->genOper, igen->genAmount);
-						if (igen->genOper == 53 /* sampleID */) {
+						if (igen->genOper == SF2Generator::sampleID) {
 							Indenter indenter;
 							int whichSample = igen->genAmount.wordAmount;
 							SF2::shdr* shdr = &hydra.shdr[whichSample];
