@@ -72,7 +72,7 @@ void DumpGenerator(int index, word genOper, SF2::genAmountType genAmount)
 				printf(
 					"[%d] %s (%d): %d-%d\n",
 					index, generator->name, genOper,
-					genAmount.ranges.hi, genAmount.ranges.lo);
+					genAmount.ranges.lo, genAmount.ranges.hi);
 				break;
 			}
 		}
