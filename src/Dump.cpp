@@ -82,7 +82,7 @@ void DumpGenerator(int index, word genOper, SF2::genAmountType genAmount)
 void DumpChunk(RIFFChunk* chunk)
 {
 	EmitIndent();
-	printf("'%c%c%c%c' size %ld.\n", FourCCArgs(chunk->id), chunk->size);
+	printf("'%c%c%c%c' size %ld at 0x%08X.\n", FourCCArgs(chunk->id), chunk->size, chunk->start);
 }
 
 
