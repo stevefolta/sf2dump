@@ -190,7 +190,7 @@ void DumpPdtaStructurally(FILE* file, RIFFChunk* pdtaChunk)
 							SF2::shdr* shdr = &hydra.shdr[whichSample];
 							EmitIndent();
 							printf(
-								"[%d] \"%s\": %lu-%lu  loop: %lu-%lu \n",
+								"[%d] \"%.20s\": %lu-%lu  loop: %lu-%lu \n",
 								whichSample, shdr->sampleName,
 								shdr->start, shdr->end, shdr->startLoop, shdr->endLoop);
 							indent += 1;

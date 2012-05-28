@@ -160,7 +160,7 @@ void DumpPdta(FILE* file, RIFFChunk* pdtaChunk)
 		else if (FourCCEquals(chunk.id, "shdr")) {
 			StartArray(shdr);
 			printf(
-				"[%d] \"%s\": %lu-%lu  loop: %lu-%lu \n",
+				"[%d] \"%.20s\": %lu-%lu  loop: %lu-%lu \n",
 				i, shdr.sampleName,
 				shdr.start, shdr.end, shdr.startLoop, shdr.endLoop);
 			indent += 1;
