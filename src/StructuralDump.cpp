@@ -59,6 +59,8 @@ void DumpSF2Structurally(const char* filename)
 			DumpINFO(file, &chunk);
 		else if (FourCCEquals(chunk.id, "pdta"))
 			DumpPdtaStructurally(file, &chunk);
+		else if (FourCCEquals(chunk.id, "sdta"))
+			DumpSdta(file, &chunk);
 
 		indent -= 1;
 		chunk.SeekAfter(file);

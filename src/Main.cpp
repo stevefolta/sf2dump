@@ -70,6 +70,8 @@ void DumpSF2(const char* filename)
 			DumpINFO(file, &chunk);
 		else if (FourCCEquals(chunk.id, "pdta"))
 			DumpPdta(file, &chunk);
+		else if (FourCCEquals(chunk.id, "sdta"))
+			DumpSdta(file, &chunk);
 
 		indent -= 1;
 		chunk.SeekAfter(file);

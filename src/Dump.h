@@ -7,6 +7,7 @@
 
 
 extern void DumpINFO(FILE* file, RIFFChunk* infoChunk);
+extern void DumpSdta(FILE* file, RIFFChunk* sdtaChunk);
 extern void DumpGenerator(int index, word genOper, SF2::genAmountType genAmount);
 extern void DumpChunk(RIFFChunk* chunk);
 

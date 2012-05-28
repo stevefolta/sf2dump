@@ -46,6 +46,19 @@ void DumpINFO(FILE* file, RIFFChunk* infoChunk)
 }
 
 
+void DumpSdta(FILE* file, RIFFChunk* sdtaChunk)
+{
+	while (ftell(file) < sdtaChunk->End()) {
+		RIFFChunk chunk;
+		chunk.ReadFrom(file);
+
+		DumpChunk(&chunk);
+
+		chunk.SeekAfter(file);
+		}
+}
+
+
 void DumpGenerator(int index, word genOper, SF2::genAmountType genAmount)
 {
 	const SF2Generator* generator = GeneratorFor(genOper);
