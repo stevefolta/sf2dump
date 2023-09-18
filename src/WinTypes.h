@@ -1,10 +1,13 @@
 #ifndef WinTypes_h
 #define WinTypes_h
 
+#include <stdint.h>
+
+
 typedef char fourcc[4];
-typedef unsigned char byte;
-typedef unsigned long dword;
-typedef unsigned short word;
+typedef uint8_t byte;
+typedef uint32_t dword;
+typedef uint16_t word;
 
 // Special types for SF2 fields.
 typedef char char20[20];
